@@ -1,0 +1,268 @@
+{% comment %}
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+{% endcomment %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+ <head>
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+	{% block stylesheet %}
+  <link rel="stylesheet" href="/soc/content/css/soc-090421.css" type="text/css"/>
+  <!--[if IE]>
+  <link rel="stylesheet" href="/soc/content/css/soc-090418-ie.css" type="text/css"/>
+  <![endif]-->
+
+  {% if uses_jq_autocomplete %}
+  <link rel="stylesheet" href="/soc/content/css/jquery-autocomplete-090304.css" type="text/css"/>
+  {% endif %}
+  {% if uses_jq_thickbox %}
+  <link rel="stylesheet" href="/soc/content/css/jquery-thickbox-090304.css" type="text/css"/>
+  {% endif %}
+  {% if uses_jq_purr %}
+  <link rel="stylesheet" href="/soc/content/css/jquery-purr-090308.css" type="text/css"/>
+  {% endif %}
+  {% if uses_jq_datetimepicker %}
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/css/ui.datetimepicker-090304.css">
+  {% endif %}
+	{% endblock %}
+  <title>
+    {% block page_title %}
+      {% if page_name %}
+{{ page_name }}
+      {% else %}
+&lt;Missing Page Name&gt;
+      {% endif %}
+    {% endblock %}
+  </title>
+
+{% block scripts %}
+  {% if uses_jq %}
+  {% if is_local %}
+  <script type='text/javascript' src="/jquery/jquery-1.2.6.js"></script>
+  {% else %}
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+  {% endif %}
+  {% endif %}
+  {% if uses_json %}
+  <script type='text/javascript' src="/json/json2.js"></script>
+  {% endif %}
+  {% if uses_jq_bt %}
+  <script type='text/javascript' src="/jquery/jquery-bt-0.7.js"></script>
+  {% endif %}
+  {% if uses_menu %}
+  <script type='text/javascript' src="/soc/content/js/menu-081108.js"></script>
+  {% endif %}
+  {% if uses_jq_purr %}
+    <script type='text/javascript' src="/jquery/jquery-purr.js"></script>
+  {% endif %}
+  {% if uses_jq_spin %}
+    <script type='text/javascript' src="/jquery/jquery-spin-1.0.2.js"></script>
+  {% endif %}
+  {% if uses_jq_bt %}
+  <script type='text/javascript' src="/soc/content/js/tips-081027.js"></script>
+  {% endif %}
+  {% if uses_jq_bgiframe %}
+  <script type='text/javascript' src='/jquery/jquery-bgiframe.js'></script>
+  {% endif %}
+  {% if uses_jq_ajaqQueue %}
+  <script type='text/javascript' src='/jquery/jquery-ajaxQueue.js'></script>
+  {% endif %}
+  {% if uses_jq_autocomplete %}
+  <script type='text/javascript' src='/jquery/jquery-autocomplete.js'></script>
+  {% endif %}
+  {% if uses_jq_thickbox %}
+  <script type='text/javascript' src='/jquery/jquery-thickbox.js'></script>
+  {% endif %}
+  {% if uses_tinymce %}
+  <script type="text/javascript" src="/tiny_mce/tiny_mce.js"></script>
+  {% endif %}
+  {% if uses_jq_progressbar %}
+  <script type="text/javascript" src="/jquery/jquery-progressbar.js"></script>
+  {% endif %}
+  {% if uses_bulk_review %}
+  <script type="text/javascript" src="/soc/content/js/bulk-review-090304.js"></script>
+  {% endif %}
+  {% if uses_jq_ui_core %}
+  <script type="text/javascript" src="/jquery/jquery-ui.core.js"></script>
+  {% endif %}
+  {% if uses_jq_datetimepicker %}
+  <script type="text/javascript" src="/jquery/jquery-ui.datetimepicker.js"></script>
+  <script type="text/javascript" src="/soc/content/js/datetime-loader-090304.js"></script>
+  <script type="text/javascript" src="/soc/content/js/datetimepicker-090304.js"></script>
+  {% endif %}
+  {% if uses_slot_allocator %}
+  <script type="text/javascript" src="/soc/content/js/slot-allocator-090320.js"></script>
+  {% endif %}
+  {% if uses_duplicates %}
+  <script type="text/javascript" src="/soc/content/js/duplicate-slots-090331.js"></script>
+  {% endif %}
+ </head>
+{% endblock %}
+
+{% block body_tag %}
+ <body>
+{% endblock %}
+
+  <div id="login">
+	{% block login_links %}
+	{% if account %}
+	<b>{{ account.email }} ({{ account.nickname }})</b> | 
+	{% endif %}
+	{% if is_admin %}
+	Developer |
+	{% endif %}
+	{% if is_debug %}
+	Debug Mode |
+	{% endif %}
+	{% if is_local %}
+	<form id="flush_form" action="/_ah/admin/memcache" method="post" style="display: inline;">
+      <input type="submit" class="button" name="action:flush" value="Flush Cache"/>
+    </form> | 
+	<a class="novisit" target="_blank" href="/_ah/admin">Admin</a> | 
+	{% endif %}
+	<a class="novisit" href="http://code.google.com/p/soc/issues/list">Report bugs</a> | 
+	{% if account %}
+	<a class="novisit" href="{{sign_out}}">Sign out</a>
+	{% else %}
+	<a class="novisit" href="{{sign_in}}">Sign in</a>
+	{% endif %}
+	{% endblock %}
+  </div>
+
+  <div id="notice">
+  {% if site_notice %}
+  <table align="center">
+      <tr>
+          <td>
+          <div class="notice">
+          <div class="rounded_ul"><div class="rounded_ur"><div class="rounded_ll"><div class="rounded_lr">
+          <div style="padding: 5px 10px;"><b>{{ site_notice|safe }}</b></div>
+          </div></div></div></div>
+          </div>
+          <td>
+      </tr>
+  </table>
+  {% endif %}
+  </div>
+
+  <div id="header">
+   <div id="logo">
+	{% block logo %}
+	{% comment %}
+	TODO: logo updated in site sponsor interface
+	{% endcomment %}
+<a href="/"><img src="/soc/content/images/gospo-logo.png" alt="{{ site_name }}"/></a>
+	{% endblock %}
+   </div>
+
+   <div id="title">
+	{% block header_title %}
+	  {% if page_name %}
+{% comment %}
+TODO(tlarsen): replace this with breadcrumbs
+{% endcomment %}
+	    {{ page_name }}
+	  {% else %}
+&lt;Missing Page Name&gt;
+      {% endif %}
+    {% endblock %}
+   </div>
+	<div id="breadcrumbs">
+	{% block breadcrumbs %}{% endblock %}
+	</div>
+
+	{% block notice %}
+	<div id="notice">
+	{% if notice %}
+	<table align="center">
+	    <tr>
+	        <td>
+	        <div class="notice">
+	        <div class="rounded_ul"><div class="rounded_ur"><div class="rounded_ll"><div class="rounded_lr">
+	        <div style="padding: 5px 10px;"><b>{{ notice }}</b></div>
+	        </div></div></div></div>
+	        </div>
+	        <td>
+	    </tr>
+	</table>
+	{% endif %}
+	</div>
+	{% endblock %}
+
+  </div>
+
+  <div id="side" dir="ltr">
+   <div id="menu">
+{% block sidebar_menu %}	
+    <ul>
+     <li>
+<a class="selected" href="/">
+    {% block sidebar_menu_title %}
+    {{ site_name }}
+    {% endblock %}
+    </a>
+{% if sidebar_menu_items %}
+{% include 'soc/sidebar/sidebar.html' %}
+{% endif %}
+     </li>
+    </ul>
+{% endblock %}
+   </div>
+
+   <div id="badge">
+	{% block badge %}
+<a href="http://code.google.com/p/soc/"
+><img src="/soc/content/images/melange-logo.jpg" alt="Powered by Melange"/></a>
+<br>
+{% if soc_release %}
+<a href="http://code.google.com/p/soc/source/browse/tags/{{ soc_release }}"
+target="_blank">Release {{ soc_release }}</a>
+{% else %}
+<a href="http://code.google.com/p/soc/source/browse/trunk"
+target="_blank">(unreleased)</a>
+{% endif %}
+	{% endblock %}
+   </div>
+  </div>
+
+  <div id="body">
+
+  {% if uses_jq_purr %}
+    <div id="purr-container"></div>
+  {% endif %}
+
+   <div style="line-height: 140%;">
+  {% block body %}
+  {% if body_content %}
+  {{ body_content|safe }}
+  {% else %}
+  &lt;Missing Page Body&gt;
+  {% endif %}
+  {% endblock %}
+   </div>
+   <div id="footer" dir="ltr">
+    <div class="text">
+	{% block footer %}
+&copy;2009 Google -
+<a href="http://www.google.com/">Google Home</a> -
+<a href="http://www.google.com/privacy.html">Privacy Policy</a> -
+<a href="http://code.google.com/appengine/terms.html">Google App Engine Terms of Service</a> -
+Version {{ gae_version }}
+	{% endblock %}
+    </div>
+   </div>
+  </div>
+  {% if ga_tracking_num %}
+    {% include 'soc/site/ga.html' %}
+  {% endif %}
+ </body>
+</html>

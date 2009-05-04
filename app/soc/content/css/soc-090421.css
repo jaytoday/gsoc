@@ -1,0 +1,587 @@
+/*
+Copyright 2009 the Melange authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+ */
+
+/*
+ * STANDARD HTML TAGS
+ */
+
+body {
+  background-color: white;
+  color: black;
+
+  font-family: Arial, sans-serif;
+  font-size: medium;
+
+  margin: 8px;
+  margin-top: 3px;
+}
+
+img {
+  border: 0;
+}
+
+form {
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  margin-bottom: 0.25em;
+}
+
+/* HEADERS */
+h1 {
+  font-size: x-large;
+  margin-top: 0px;
+}
+
+h2 {
+  font-size: large;
+}
+
+h3 {
+  font-size: medium;
+}
+
+h4 {
+  font-size: small;
+}
+
+/* PRE-FORMATTED TEXT */
+pre, code {
+  color: #007000;
+  font-family: "bogus font here", monospace;
+  font-size: 100%;
+}
+
+pre {
+  border: 1px solid silver;
+  background-color: #f5f5f5;
+  padding: 0.5em;
+  overflow: auto;
+  margin: 2em;
+}
+
+pre ins {
+  color: #cc0000;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+/* LINKS AND ANCHORS */
+a:link {
+  color: #0000cc;
+}
+
+a:active {
+  color: #cc0000;
+}
+
+a:visited {
+  color: #551a8b;
+}
+
+a.selected, .selected a, .selected {
+  color: black;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+a.novisit {
+  color: #2a55a3;
+}
+
+a.noul, a.noulv {
+  color: #4182fa; /* #93b7fa; */
+  text-decoration: none;
+}
+
+a:hover.noul {
+  text-decoration: underline;
+}
+
+a:visited.noul {
+  color: #a32a91; /* #2a55a3; */
+}
+
+
+/* Styles used by Django Forms */
+ul.errorlist {
+  color: #FF0000;
+  font-size: small;
+}
+
+
+/* TABLES */
+table {
+  border-collapse: collapse;
+}
+
+th, td {
+  /*padding: 0;*/
+  padding:2px 5px;
+  vertical-align: top;
+  text-align: left;
+}
+
+/* FORM FIELDS */
+td.formfieldrequired {
+  font-style: italic;
+  font-size: small;
+  text-align: center;
+}
+
+td.formfieldhelptext {
+  font-style: italic;
+  font-size: small;
+  padding: 5px;
+}
+
+td.formfielderror {
+  color: #FF0000;
+  font-size: small;
+}
+
+td.formfieldheading {
+  font-weight: bold;
+  font-size: small;
+}
+
+td.formfieldlabel {
+  font-weight: bold;
+  font-size: small;
+  text-align: right;
+}
+
+td.twolineformfieldlabel {
+  font-weight: bold;
+  font-size: small;
+  text-align: left;
+}
+
+td.twolineformfieldlabel {
+  font-weight: bold;
+  font-size: small;
+}
+
+td.twolineformfielderrorlabel {
+  font-weight: bold;
+  color: #FF0000;
+  font-size: small;
+}
+
+td.formfieldvalue {
+  text-align: left;
+}
+
+td.formfieldvalue input {
+  width: 100%;
+}
+
+td.formfieldvalue input[type=checkbox] {
+  width: auto;
+}
+
+td.formfieldvalue input:focus {
+  background-color: #FFFF99;
+  font-weight: bold;
+}
+
+td.formfieldvalue textarea {
+  width: 100%;
+}
+
+td.formfieldvalue select {
+  width: 100%;
+}
+
+td.formfielderrorlabel, td.warning, span.formfielderrorlabel {
+  font-weight: bold;
+  color: #FF0000;
+  font-size: small;
+  text-align: right;
+}
+
+/* TABLE QUEUES (used with .list) */
+table#queues {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table#queues tr {
+  border-bottom: thin solid lightgray;
+}
+
+table#queues td {
+  padding: 2px;
+}
+
+/*
+ * PAGE ELEMENTS
+ */
+
+#title {
+  border-top: 1px solid #3366cc;
+  background-color: #e5ecf9;
+  font-size: large;
+  font-weight: bold;
+  margin: 0;
+  padding: 0;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  margin-top: 5px;
+  margin-left: 200px;
+  padding-left: 3px;
+}
+
+#notice {
+  margin-left: 200px;
+  padding: 3px;
+}
+
+#logo {
+  padding-right: 18px;
+  position: absolute;
+  left: 0;
+  top: -5px;
+}
+
+#login {
+  text-align: right;
+}
+
+#badge {
+  clear: both;
+  margin-top: 3.5em;
+  margin-bottom: 1em;
+  height: 53px;
+  font-style: italic;
+}
+
+#body {
+  border-left: 1px dotted silver;
+  margin-left: 200px;
+  margin-right: 25px;
+  padding-left: 18px;
+  padding-bottom: 25px;
+}
+
+#body .buttons {
+  margin-right: 4px;
+  margin-top: 20px;
+}
+
+#body a.button, input[type^="submit"], input[type^="button"] {
+  margin: 0;
+  padding: 2px 5px 2px 5px;
+  font-family: Arial, Sans-serif;
+  font-size: 12px;
+  text-decoration: none;
+  color: #222;
+  cursor: default;
+  background: #ddd url("/soc/content/images/button-background.gif") repeat-x 0 0;
+  border: 1px solid #aaa;
+}
+
+#body a.button:hover, input[type^="submit"]:hover, input[type^="button"]:hover {
+  border-color: #9cf #69e #69e #7af;
+}
+
+#header {
+  height: 50px;
+  margin-bottom: 11px;
+  position: relative;
+}
+
+#footer {
+  clear: both;
+  text-align: center;
+  margin-top: 3.5em;
+  margin-bottom: 1em;
+  background-image: url("http://www.google.com/images/art.gif");
+  height: 53px;
+  background-repeat: no-repeat;
+  background-position: left center;
+  padding-left: 125px;
+}
+
+#footer .text {
+  padding-top: 20px;
+}
+
+#created {
+  font-size: x-small;
+  color:#C0C0C0;
+  text-align: right;
+}
+
+/* Google Map */
+#role_profile_map {
+  height: 240px;
+  width: 320px;
+}
+
+#org_home_extras {
+  position: relative;
+  margin:2em 0em 2em;
+  min-height:500px;
+}
+
+#extras_left {
+  position: absolute;
+  width: 55%;
+  left: 0px;
+} 
+
+#extras_right {
+  position: absolute;
+  width: 43%;
+  right: 0px;
+  float: right;
+} 
+
+/* Organization home gmap */
+#org_home_map {
+  height: 500px;
+  width: 500px;
+}
+
+/* SIDEBAR MENU */
+#side {
+  width: 200px;
+  margin-bottom: 3em;
+  float: left;
+  font-size: small;
+}
+
+#menu ul {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+  margin-bottom: 1em;
+  font-size: 95%;
+}
+
+#menu ul ul {
+  margin-left: 10px;
+  margin-bottom: 0;
+}
+
+#menu li {
+  margin-top: 4px;
+  list-style-type: none;
+  list-style-image: none;
+}
+
+#menu img {
+  margin-right: 4px;
+}
+
+#menu li.leaf {
+  padding-left: 14px;
+}
+
+#menu h4 {
+  margin: 0;
+  padding: 0;
+  margin-bottom: 1em;
+}
+
+/*  */
+
+span.unread {
+  font-weight: bold;
+  color: #FF0000;
+}
+
+span.edited {
+  color: #808080;
+}
+
+/* SEARCH FIELD */
+#search {
+  margin-top: 2em;
+}
+
+#search .header {
+  font-weight: bold;
+  font-size: 90%;
+  margin-bottom: 1px;
+}
+
+#search .button {
+  margin-top: 1px;
+}
+
+#search .input input {
+  width: 125px;
+}
+
+/* BLOG FEEDS */
+.blog {
+  border: 10px solid #e5ecf9;
+  border-top: 1px solid #3366cc;
+}
+
+.blog h2 {
+  margin-top: 0.1em;
+  background-color: #e5ecf9;
+}
+
+.blog h2 a {
+  text-decoration: none;
+  color: black;
+}
+
+.blog h2 a:visited {
+  text-decoration: none;
+  color: black;
+}
+
+
+.blog .entry {
+  margin-bottom: 1em;
+}
+
+.blog .title {
+   font-size: medium;
+}
+
+.blog .author {
+  color: gray;
+  margin-bottom: 0.5em;
+}
+
+.blog .snippet {
+  background-color: white;
+}
+
+/* LIST */
+.list {
+  background-color: #E5ECF9;
+  border: 1px solid  #93b7fa;
+  border-bottom: 2px solid #93b7fa;
+  padding: 3px;
+  -moz-border-radius: 5px 5px 0px 0px;
+}
+
+.list .pagination {
+  text-align: right;
+  padding: 3px;
+}
+
+.list table{
+  background-color: white;
+}
+
+.list table th {
+  background-color: #eeeeec;
+  border-right: 1px solid lightgray;
+  border-top: 1px solid lightgray;
+}
+
+.list table tr.on {
+  background-color: #ff9;
+}
+
+.list table tr.off {
+  background-color: #fff;
+}
+
+.list table td.last {
+  border-right: 1px solid lightgray;
+}
+
+.list table .first {
+  border-left: 1px solid lightgray;
+}
+
+/*
+ * STUDENT PROPOSAL REVIEWS
+ */
+.studentproposalreview {
+  font-size: small;
+}
+
+.studentproposalreview .title {
+  background-color: #e5ecf9;
+}
+
+.studentproposalreview .student{
+  background: #d0f5a9;
+}
+
+.studentproposalcomment-public,
+.studentproposalreview-public .other {
+  background: #f5f6ce;
+}
+
+.studentproposalcomment-private,
+.studentproposalreview-private .other {
+  background: #D2EDF6;
+}
+
+/*
+ * CUSTOM CLASSES
+ */
+
+.assignedslot {
+  background-color: #d0f5a9;
+}
+
+.todo {
+  color: #cc0000;
+  font-size: 80%;
+}
+
+.newmark {
+  color: red;
+  font-size: 80%;
+  vertical-align: top;
+}
+
+.error {
+  color: red;
+}
+
+.notice {
+  background:#fad163;
+  font-size: small;
+  font-weight: bold;
+}
+
+.fieldhelptext {
+  width: 450px;
+  background:#fad163;
+  font-size: small;
+  border: 1px solid black;
+}
+
+.rounded_ul { background: url(/soc/content/images/ul.gif) no-repeat top left; }
+.rounded_ur { background: url(/soc/content/images/ur.gif) no-repeat top right; }
+.rounded_ll { background: url(/soc/content/images/ll.gif) no-repeat bottom left; }
+.rounded_lr { background: url(/soc/content/images/lr.gif) no-repeat bottom right; }
+
+/* Disabled text. */
+.disabled {
+  color: gray;
+}
+
+.plaintext {
+  background:transparent none repeat scroll 0 0;
+  border:0 none;
+  color:black;
+}

@@ -1,0 +1,57 @@
+{% extends "soc/models/edit.html" %}
+{% comment %}
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+{% endcomment %}
+{% load forms_helpers %}
+
+{% block scripts %}
+{{ block.super }}
+{% if gmaps_api_key %}
+	<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key={{ gmaps_api_key }}" type="text/javascript"></script>
+	<script type="text/javascript" src="/soc/content/js/map-090420.js"></script>
+{% endif %}
+{% endblock %}
+
+{% block body_tag %}
+  {% if gmaps_api_key %}
+    <body onLoad="role_profile_gmap.map_load()" onunload="GUnload()">
+  {% else %}
+    {{ block.super }}
+  {% endif %}
+{% endblock %}
+
+{% block instructions %}
+{{ block.super }}
+{% if not gmaps_api_key %}
+<br /><span class="error">Google Maps API key not present.
+Please insert your key in <a href="/site/edit">Site Settings</a>, Google Maps field.
+</span>
+{% endif %}
+{% endblock %}
+
+{% block form_table %}
+{{ block.super }}
+    {% if gmaps_api_key %}
+    <tr title="your location">
+      <td class="formfieldlabel">
+        <label for="id_location">Location:</label>
+      </td>
+      <td>
+        <div id="role_profile_map"></div>
+      </td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "soc/base.html" %}
+{% comment %}
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+{% endcomment %}
+
+{% load forms_helpers %}
+
+{% block page_title %}User Profile{% endblock %}
+
+{% block header_title %}
+{% if user %}
+Modify Existing User Profile for {{ user.name }} ({% as_email account %})</a>
+{% else %}
+Create a New User Profile for {% as_email account %}</a>
+{% endif %}
+{% endblock %}
+
+{% block body %}
+<p>
+<p>
+{% block instructions %}
+Please use this form to set basic site-wide settings for your participation in {{ site_name }}.
+{% endblock %}
+</p>
+<form method="POST">
+ <table>
+  {% field_as_table_row form.link_id %}
+{% if not user %}
+  <tr>
+   <td class="fieldhelptext" colspan="4">
+This <i>Link ID</i> is used throughout the site when creating various URL
+links related to you and content you create.  As a result, it may only
+consist of <a href="http://en.wikipedia.org/wiki/ASCII">ASCII</a>
+characters, digits, and underscores.  Also, it must
+be unique and not in use by any other user of the site.<br>
+<br>
+<div style="text-align: center; font-size: 14pt;"><b>The Link ID can NOT be changed.</b></div>
+<br>
+   </td>
+  </tr>
+  <tr><td colspan="4">&nbsp;</td></tr>
+  {% else %}
+    </td>
+  </tr>
+  {% endif %}
+
+  {% field_as_table_row form.name %}
+  <tr>
+   <td class="fieldhelptext" colspan="4">
+While you can use your real name, like <tt>First Last</tt>, please
+keep in mind that this public name will be used as your alias
+<b><i>throughout the site</i></b>, displayed to all users, for comments,
+document ownership, and the like.  You can change this public name at any
+time.<br>
+<br>
+<b><i>Please</i> do not <i>use your real name if you are a minor (not an
+adult) where you live.</i></b>
+   </td>
+  </tr>
+  <tr><td colspan="4">&nbsp;</td></tr>
+
+{% if tos_link %}
+{% if not user.agreed_to_tos %}
+<tr>
+  <td style="width:450px" colspan="4">
+    <div id="ToS" style="overflow:auto;height:200px">
+      {{ tos_contents|safe|linebreaks }}
+    </div>
+  </td>
+</tr>
+  {% field_as_table_row form.agreed_to_tos %}
+  <tr>
+   <td class="fieldhelptext" colspan="4">
+   <div id="ToS_hidden" style="display:none">
+      {{ tos_contents|safe|linebreaks }}
+   </div>
+In order to participate on this site, you must agree to the
+<a href="#TB_inline?height=500&amp;width=500&amp;inlineId=ToS_hidden" title="Terms of Service" class="thickbox">site-wide Terms of Service</a>.<br><br>
+(There may also be additional Terms of Service specific to participation
+in certain Programs or Groups.  Those are agreed to elsewhere on the site,
+when signing up for the specific participation Roles.)
+   </td>
+  </tr>
+  <tr><td colspan="4">&nbsp;</td></tr>
+{% else %}
+{% field_as_table_row form.agreed_to_tos_on %}
+{{ form.agreed_to_tos }}
+{% endif %}
+{% endif %}
+ </table>
+ <table>
+  <tr>
+    {% block submit_buttons %}
+   <td> 
+    <input style="font-weight: bold" type="submit" value="Save Changes"/></span>
+   </td>
+   <td>
+    <input type="button" onclick="location.href='/'" value="Cancel"/>
+   </td>
+    {% endblock %}
+  </tr>
+ </table>
+</form>
+</p>
+{% endblock %}

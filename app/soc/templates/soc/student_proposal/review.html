@@ -1,0 +1,221 @@
+{% extends "soc/base.html" %}
+{% comment %}
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+{% endcomment %}
+{% load comments_helpers %}
+{% load forms_helpers %}
+
+{% block header_title %}
+{{ page_name }} (Score: {{ entity.score }})
+{% endblock %}
+
+{% block body %}
+<table>
+ {% if is_subscribed_public %}
+ <td>
+   <input style="font-weight: bold" type="button" value="Unsubscribe from public updates"
+     onclick="location.href='?public_subscription=off'"/>
+ </td>
+ {% else %}
+ <td>
+   <input style="font-weight: bold" type="button" value="Subscribe to public updates"
+     onclick="location.href='?public_subscription=on'"/>
+ </td>
+ {% endif %}
+ {% if is_subscribed_private %}
+ <td>
+   <input style="font-weight: bold" type="button" value="Unsubscribe from private updates"
+     onclick="location.href='?private_subscription=off'"/>
+ </td>
+ {% else %}
+ <td>
+   <input style="font-weight: bold" type="button" value="Subscribe to private updates"
+     onclick="location.href='?private_subscription=on'"/>
+ </td>
+ {% endif %}
+</table>
+
+<p>
+ <table>
+  {% readonly_field_as_table_row entity.fields.title.label entity.title %}
+  {% readonly_field_as_table_row "Student" student_name %}
+  {% readonly_field_as_table_row "Mentor" mentor_name %}
+  {% readonly_field_as_table_row "Possible Mentors" possible_mentors %}
+  {% readonly_field_as_table_row entity.fields.abstract.label entity.abstract %}
+  {% readonly_safe_field_as_table_row entity.fields.content.label entity.content %}
+  {% readonly_url_field_as_table_row entity.fields.additional_info.label entity.additional_info %}
+  {% readonly_field_as_table_row "Created on" entity.created_on %}
+  {% readonly_field_as_table_row "Last Modified on" entity.last_modified_on %}
+ </table>
+</p>
+
+<hr />
+<b>Summary of Reviews</b>:
+{% for key, value in review_summary.items %}
+    <li>{{ value.name }} ({{ value.total_comments }} posts, {{ value.total_score }} points)</li>
+{% endfor %}
+
+<hr />
+<form method="POST">
+<b>Score and Review</b>
+
+<div class="box">
+  <table id="commentcommon">
+    <!-- By default this is not displayed, so that all options work on non-javascript browsers -->
+    <tr style="display: none;">
+      <td class="formfieldlabel">
+        Comment Type:
+      </td>
+      <td class="formfieldvalue" colspan=3>
+        <select id="commenttypeselector" onchange="commentType();">
+          <option value="Private">Private Comment</option>
+          {% if is_org_admin %}
+           <option value="Admin">Admin Comment</option>
+          {% endif %}
+          <option value="Public">Comment Visible to Student</option>
+        </select>
+      </td>
+    </tr>
+    <tbody id="commentpublic">
+      {% block comment_public_form_table %}
+        {% as_table comment_public %}
+      {% endblock %}
+    </tbody>
+    <tbody id="commentprivate">
+      {% block comment_private_form_table %}
+        {% as_table comment_private %}
+      {% endblock %}
+    </tbody>
+    <tbody id="commentadmin">
+      {% block comment_admin_form_table %}
+        {% as_table comment_admin %}
+      {% endblock %}
+    </tbody>
+  </table>
+</div>
+ <table>
+  <tr>
+   <td colspan="4">&nbsp;</td>
+  </tr>
+  <tr>
+   <td> 
+    <input style="font-weight: bold" type="submit" value="Submit"/></span>
+   </td>
+  </tr>
+  <tr>
+  <td><b>Other Options:</b></td>
+  </tr>
+  <tr>
+   {% if add_me_as_mentor %}
+   <td>
+   <input style="font-weight: bold" type="button" value="I am willing to mentor this student"
+     onclick="location.href='?mentor=1'"/>
+   </td>
+   {% else %} 
+     {% if remove_me_as_mentor %}
+     <td>
+       <input style="font-weight: bold" type="button" value="I am no longer willing to mentor this student"
+       onclick="location.href='?mentor=0'"/>
+     </td>
+     {% endif %}
+   {% endif %}
+   {% if is_org_admin or is_mentor %}
+     {% ifequal entity.status "invalid" %}
+     <td>
+       <input style="font-weight: bold" type="button" value="Mark as Eligible"
+       onclick="if (confirm('Are you sure you want to mark this proposal as eligible?')) { location.href='?ineligible=0'; }"/>
+     </td>
+     {% else %}
+     <td>
+       <input style="font-weight: bold" type="button" value="Mark as Ineligible"
+       onclick="if (confirm('Are you sure you want to mark this proposal as ineligible?')) { location.href='?ineligible=1'; }"/>
+     </td>
+     {% endifequal %}
+   {% endif %}
+   </tr>
+ </table>
+</form>
+
+<hr />
+<b>Public Reviews</b>
+{% for review in public_reviews %}
+  {% as_student_proposal_review review student %}
+{% endfor %}
+<hr />
+<b>Private Reviews</b>
+{% for review in private_reviews %}
+  {% as_student_proposal_review review student %}
+{% endfor %}
+<hr />
+
+{% comment %}
+  TODO(pawel.solyga): Put this javascript into separate file
+{% endcomment %}
+<script type="text/javascript">
+function commentType() {
+  var commentTypeSelector = document.getElementById("commenttypeselector");
+  var type = commentTypeSelector[commentTypeSelector.options.selectedIndex].value;
+
+  var commentPublic = document.getElementById("commentpublic");
+  var commentPrivate = document.getElementById("commentprivate");
+  var commentAdmin = document.getElementById("commentadmin");
+
+  var publicCheckbox = document.getElementById("id_public");
+  var cssString = "studentproposalcomment-";
+  var cssRemoveString = "studentproposalcomment-";
+
+  switch (type) {
+    case "Public":
+      commentPublic.style.display = "";
+      commentPrivate.style.display = "none";
+      commentAdmin.style.display = "none";
+      publicCheckbox.checked = true;
+      cssString += "public";
+      cssRemoveString += "private";
+      break;
+    case "Private":
+      commentPublic.style.display = "";
+      commentPrivate.style.display = "";
+      commentAdmin.style.display = "none";
+      publicCheckbox.checked = false;
+      cssString += "private";
+      cssRemoveString += "public";
+      break;
+    case "Admin":
+      commentPublic.style.display = "";
+      commentPrivate.style.display = "";
+      commentAdmin.style.display = "";
+      publicCheckbox.checked = false;
+      cssString += "private";
+      cssRemoveString += "public";
+      break;
+    default:
+      alert("Unknown value");
+      alert(type);
+      break;
+  }
+  $($('#commenttypeselector').parents('.box').get(0)).removeClass(cssRemoveString).addClass(cssString);
+}
+
+// Set the comment type selector to be displayed
+var commentTypeSelector = document.getElementById("commenttypeselector");
+commentTypeSelector.parentNode.parentNode.style.display = "";
+commentTypeSelector.options.selectedIndex = 0;
+var publicCheckbox = document.getElementById("id_public");
+publicCheckbox.parentNode.parentNode.style.display = "none";
+
+// Set the comment view to default to what ever is selected
+commentType();
+</script>
+
+{% endblock %}

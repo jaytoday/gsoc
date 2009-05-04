@@ -1,0 +1,80 @@
+{% extends "soc/base.html" %}
+{% comment %}
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+{% endcomment %}
+{% load forms_helpers %}
+
+{% block body %}
+<p>
+<p>
+{% block instructions %}
+Please use this form to change the Mentor for the Student Project.
+{% endblock %}
+
+{% if error_message %}
+  <div class="error">{{ error_message|safe }}</div>
+{% endif %}
+
+<form method="POST">
+  <table>
+    {% as_table mentor_edit_form %}
+  </table>
+  <table>
+  <tr>
+   <td colspan="4">&nbsp;</td>
+  </tr>
+  <tr>
+    <td> 
+      <input style="font-weight: bold" type="submit" value="Submit" name="set_mentor"/></span>
+    </td>
+    <td>
+      <input type="button" value="Back to Previous Page" onClick="javascript: history.go(-1)">
+    </td>
+  </tr>
+ </table>
+</form>
+<p/>
+
+<b> Co-Mentors </b><br/>
+
+<table>
+  {% for mentor in additional_mentors %}
+    <tr>
+      <td>
+        {{ mentor.name }}
+      </td>
+      <td>
+        <input type="button" onclick="location.href='?remove={{ mentor.link_id }}'" value="Remove"/>
+      </td>
+  {% endfor %}
+</table>
+
+<form method="POST">
+  <table>
+    {% as_table additional_mentor_form %}
+  </table>
+  <table>
+  <tr>
+   <td colspan="4">&nbsp;</td>
+  </tr>
+  <tr>
+    <td> 
+      <input style="font-weight: bold" type="submit" value="Add" name="add_additional_mentor"/></span>
+    </td>
+    <td>
+      <input type="button" value="Back to Previous Page" onClick="javascript: history.go(-1)">
+    </td>
+  </tr>
+ </table>
+</form>
+{% endblock %}

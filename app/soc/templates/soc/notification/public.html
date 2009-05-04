@@ -1,0 +1,53 @@
+{% extends "soc/base.html" %}
+{% comment %}
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+{% endcomment %}
+{% load forms_helpers %}
+
+{% block page_title %}
+Notification
+{% endblock %}
+
+{% block header_title %}
+Notification about: {{ entity.subject }}
+{% endblock %}
+
+{% block body %}
+<table>
+
+{% if entity.from_user %}
+{% readonly_field_as_table_row entity.fields.from_user.label entity.from_user.name %}
+{% else %}
+{% readonly_field_as_table_row entity.fields.from_user.label site_name %}
+{% endif %}
+
+{% readonly_field_as_table_row "To" entity.scope.name %}
+{% readonly_field_as_table_row "Sent On" entity.created_on %}
+{% readonly_field_as_table_row entity.fields.subject.label entity.subject %}
+
+<tr title="{{ field.help_text }}">
+ <td class="formfieldlabel">
+	{{ entity.fields.message.label }}:
+ </td>
+ <td class="formfieldvalue">
+	{{ entity.message|safe }}
+ </td>
+
+<tr>
+  <td>
+    <input type="button" onclick="location.href='/{{ entity_type_url|lower }}/delete/{{ entity_suffix }}'" value="Delete"/>
+  </td>
+</tr>
+</table>
+
+{% endblock %}
