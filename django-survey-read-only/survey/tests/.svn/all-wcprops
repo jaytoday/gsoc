@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 35
+/svn/!svn/ver/64/trunk/survey/tests
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/48/trunk/survey/tests/__init__.py
+END
+test_models.py
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/20/trunk/survey/tests/test_models.py
+END
+test_urls.py
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/64/trunk/survey/tests/test_urls.py
+END
+test_images.py
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/48/trunk/survey/tests/test_images.py
+END

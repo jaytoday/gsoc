@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 30
+/svn/!svn/ver/103/trunk/survey
+END
+admin.py
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/101/trunk/survey/admin.py
+END
+views.py
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/103/trunk/survey/views.py
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/2/trunk/survey/__init__.py
+END
+models.py
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/98/trunk/survey/models.py
+END
+urls.py
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/svn/!svn/ver/93/trunk/survey/urls.py
+END
+forms.py
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/103/trunk/survey/forms.py
+END
