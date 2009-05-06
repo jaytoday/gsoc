@@ -360,7 +360,6 @@ def getListSurveysRedirect(entity, prefix):
 
 
 
-
 def getToSRedirect(presence):
   """Returns link to 'show' the ToS Document if it exists, None otherwise.
 

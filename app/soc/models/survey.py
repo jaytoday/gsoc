@@ -29,6 +29,22 @@ import soc.models.linkable
 import soc.models.work
 
 
+
+class SurveyContent(db.Expando):
+	
+  """Expando Class for Surveys
+     Each survey entity consists of properties where names and default
+     values are set by the survey creator
+  """
+  string = db.StringProperty()
+  integer = db.IntegerProperty(default=1)
+  text = db.TextProperty()
+  select = db.StringProperty(default='Medium',choices=[
+    'High', 'Medium', 'Low'])
+  entry_time = db.DateTimeProperty(auto_now_add=True)
+
+
+
 class Survey(soc.models.work.Work):
   """Model of a survey.
   
@@ -43,6 +59,7 @@ class Survey(soc.models.work.Work):
 
     work.content:  the rich-text contents of the Document
   """
+
 
   URL_NAME = 'survey'
   DOCUMENT_ACCESS = ['admin', 'restricted', 'member', 'user']
@@ -86,3 +103,5 @@ class Survey(soc.models.work.Work):
     collection_name='home_surveys')
   home_for.help_text = ugettext(
       'The Precense this document is the home document for.')
+
+  survey_content = db.TextProperty()

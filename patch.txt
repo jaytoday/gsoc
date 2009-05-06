@@ -1,0 +1,592 @@
+diff -r ebc4931f0762 app/soc/content/css/soc-090421.css
+--- a/app/soc/content/css/soc-090421.css	Tue May 05 21:48:46 2009 +0200
++++ b/app/soc/content/css/soc-090421.css	Tue May 05 16:27:32 2009 -0700
+@@ -644,3 +644,18 @@
+   border:0 none;
+   color:black;
+ }
++
++
++
++/* Surveys */
++
++div#survey_widget{
++margin:30px;
++-moz-border-radius-bottomleft:5px;
++-moz-border-radius-bottomright:5px;
++-moz-border-radius-topleft:5px;
++-moz-border-radius-topright:5px;
++background-color:#FFFEEB;
++border:5px solid #F7CA75;
++padding: 15px;
++}
+diff -r ebc4931f0762 app/soc/logic/models/survey.py
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/app/soc/logic/models/survey.py	Tue May 05 16:27:32 2009 -0700
+@@ -0,0 +1,91 @@
++#!/usr/bin/python2.5
++#
++# Copyright 2008 the Melange authors.
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#   http://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++
++"""Survey (Model) query functions.
++"""
++
++__authors__ = [
++  'JamesLevy" <jamesalexanderlevy@gmail.com>',
++  ]
++
++
++from soc.cache import sidebar
++from soc.cache import home
++from soc.logic.models import work
++from soc.logic.models import linkable as linkable_logic
++
++import soc.models.survey
++import soc.models.work
++
++
++class Logic(work.Logic):
++  """Logic methods for the Survey model
++  """
++
++  def __init__(self, model=soc.models.survey.Survey,
++               base_model=soc.models.work.Work, scope_logic=linkable_logic):
++    """Defines the name, key_name and model for this entity.
++    """
++
++    super(Logic, self).__init__(model=model, base_model=base_model,
++                                scope_logic=scope_logic)
++
++  def getKeyValuesFromEntity(self, entity):
++    """See base.Logic.getKeyNameValues.
++    """
++
++    return [entity.prefix, entity.scope_path, entity.link_id]
++
++  def getKeyValuesFromFields(self, fields):
++    """See base.Logic.getKeyValuesFromFields.
++    """
++
++
++    return [fields['prefix'], fields['scope_path'], fields['link_id']]
++
++  def getKeyFieldNames(self):
++    """See base.Logic.getKeyFieldNames.
++    """
++
++    return ['prefix', 'scope_path', 'link_id']
++
++  def isDeletable(self, entity):
++    """See base.Logic.isDeletable.
++    """
++
++    return not entity.home_for
++
++  def _updateField(self, entity, entity_properties, name):
++    """Special logic for role. If state changes to active we flush the sidebar.
++    """
++
++    
++    
++    value = entity_properties[name]
++
++    
++    if (name == 'is_featured') and (entity.is_featured != value):
++      sidebar.flush()
++
++    home_for = entity.home_for
++
++    if (name != 'home_for') and home_for:
++      home.flush(home_for)
++
++    return True
++
++
++logic = Logic()
+diff -r ebc4931f0762 app/soc/models/survey.py
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/app/soc/models/survey.py	Tue May 05 16:27:32 2009 -0700
+@@ -0,0 +1,106 @@
++#!/usr/bin/python2.5
++#
++# Copyright 2008 the Melange authors.
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++# 
++#   http://www.apache.org/licenses/LICENSE-2.0
++# 
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++
++"""This module contains the Document Model."""
++
++__authors__ = [
++  'JamesLevy" <jamesalexanderlevy@gmail.com>',
++]
++
++
++from google.appengine.ext import db
++
++from django.utils.translation import ugettext
++
++import soc.models.linkable
++import soc.models.work
++
++
++
++class SurveyContent(db.Expando):
++	
++  """Expando Class for Surveys
++     Each survey entity consists of properties where names and default
++     values are set by the survey creator
++  """
++  string = db.StringProperty()
++  integer = db.IntegerProperty(default=1)
++  text = db.TextProperty()
++  select = db.StringProperty(default='Medium',choices=[
++    'High', 'Medium', 'Low'])
++  entry_time = db.DateTimeProperty(auto_now_add=True)
++
++
++
++class Survey(soc.models.work.Work):
++  """Model of a survey.
++  
++  survey is used for things like FAQs, front page text, etc.
++
++  The specific way that the properties and relations inherited from Work
++  are used with a survey are described below.
++
++    work.title:  the title of the Document
++
++    work.reviews:  reviews of the Document by Reviewers
++
++    work.content:  the rich-text contents of the Document
++  """
++
++
++  URL_NAME = 'survey'
++  DOCUMENT_ACCESS = ['admin', 'restricted', 'member', 'user']
++
++  #: field storing the prefix of this document
++  prefix = db.StringProperty(default='user', required=True,
++      choices=['site', 'club', 'sponsor', 'program', 'org', 'user'],
++      verbose_name=ugettext('Prefix'))
++  prefix.help_text = ugettext(
++      'Indicates the prefix of the survey,'
++      ' determines which access scheme is used.')
++
++  #: field storing the required access to read this document
++  read_access = db.StringProperty(default='public', required=True,
++      choices=DOCUMENT_ACCESS + ['public'],
++      verbose_name=ugettext('Read Access'))
++  read_access.help_text = ugettext(
++      'Indicates the state of the survey, '
++      'determines the access scheme.')
++
++  #: field storing the required access to write to this document
++  write_access = db.StringProperty(default='admin', required=True,
++      choices=DOCUMENT_ACCESS,
++      verbose_name=ugettext('Write Access'))
++  write_access.help_text = ugettext(
++      'Indicates the state of the survey, '
++      'determines the access scheme.')
++
++  #: field storing whether a link to the survey should be featured in
++  #: the sidebar menu (and possibly elsewhere); FAQs, Terms of Service,
++  #: and the like are examples of "featured" survey
++  is_featured = db.BooleanProperty(
++      verbose_name=ugettext('Is Featured'))
++  is_featured.help_text = ugettext(
++      'Field used to indicate if a Work should be featured, for example,'
++      ' in the sidebar menu.')
++
++  #: Reference to survey containing the contents of the "/home" page
++  home_for = db.ReferenceProperty(
++    reference_class=soc.models.linkable.Linkable,
++    collection_name='home_surveys')
++  home_for.help_text = ugettext(
++      'The Precense this document is the home document for.')
++
+diff -r ebc4931f0762 app/soc/templates/soc/survey/list/heading.html
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/app/soc/templates/soc/survey/list/heading.html	Tue May 05 16:27:32 2009 -0700
+@@ -0,0 +1,9 @@
++<tr align="left">
++  <th>Path</th>
++  <th>Title</th>
++  <th>Link ID</th>
++  <th>Featured</th>
++  <th>Created By</th>
++  <th>Created On</th>
++  <th>Modified</th>
++</tr>
+diff -r ebc4931f0762 app/soc/templates/soc/survey/list/row.html
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/app/soc/templates/soc/survey/list/row.html	Tue May 05 16:27:32 2009 -0700
+@@ -0,0 +1,15 @@
++<tr class="off" onmouseover="this.className='on'" onmouseout="this.className='off'" 
++onclick="document.location.href='{{ list.redirect }}'" name="name">
++  <td align="right">
++   <div class="title">
++    <a class="noul"
++     href="{{ list.redirect }}">{{ list.item.scope_path}}/{{ list.item.link_id }}</a>
++   </div>
++  </td>
++  <td><div class="title">{{ list.item.title }}</div></td>
++  <td><div class="link_id">{{ list.item.link_id }}</div></td>
++  <td><div class="featured">{{ list.item.is_featured }}</div></td>
++  <td><div class="author">{{ list.item.author.link_id }}</div></td>
++  <td><div class="created">{{ list.item.created }}</div></td>
++  <td><div class="modified">{{ list.item.modified }}</div></td>
++</tr>
+diff -r ebc4931f0762 app/soc/templates/soc/survey/public.html
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/app/soc/templates/soc/survey/public.html	Tue May 05 16:27:32 2009 -0700
+@@ -0,0 +1,27 @@
++{% extends "soc/base.html" %}
++{% comment %}
++Licensed under the Apache License, Version 2.0 (the "License");
++you may not use this file except in compliance with the License.
++You may obtain a copy of the License at
++
++  http://www.apache.org/licenses/LICENSE-2.0
++
++Unless required by applicable law or agreed to in writing, software
++distributed under the License is distributed on an "AS IS" BASIS,
++WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++See the License for the specific language governing permissions and
++limitations under the License.
++{% endcomment %}
++
++{% block page_title %}
++{{ entity.title }}
++{% endblock %}
++
++{% block header_title %}
++{{ entity.title }}
++{% endblock %}
++
++{% block body %}
++<div id="created">Last modified on {{ entity.modified }} by {{ entity.modified_by.name }}</div>
++<div id="content">{{ entity.content|safe }}</div>
++{% endblock %}
+diff -r ebc4931f0762 app/soc/views/helper/redirects.py
+--- a/app/soc/views/helper/redirects.py	Tue May 05 21:48:46 2009 +0200
++++ b/app/soc/views/helper/redirects.py	Tue May 05 16:27:32 2009 -0700
+@@ -345,6 +345,21 @@
+   return '/document/list/%s/%s' % (prefix, entity.key().id_or_name())
+ 
+ 
++def getCreateSurveyRedirect(entity, prefix):
++  """Returns the redirect for new documents.
++  """
++
++  return '/survey/create/%s/%s' % (prefix, entity.key().id_or_name())
++
++
++def getListSurveysRedirect(entity, prefix):
++  """Returns the redirect for listing documents.
++  """
++
++  return '/survey/list/%s/%s' % (prefix, entity.key().id_or_name())
++
++
++
+ def getToSRedirect(presence):
+   """Returns link to 'show' the ToS Document if it exists, None otherwise.
+ 
+diff -r ebc4931f0762 app/soc/views/helper/widgets.py
+--- a/app/soc/views/helper/widgets.py	Tue May 05 21:48:46 2009 +0200
++++ b/app/soc/views/helper/widgets.py	Tue May 05 16:27:32 2009 -0700
+@@ -31,8 +31,20 @@
+ from django.utils import safestring
+ 
+ from soc.logic import dicts
+-
+-
++from google.appengine.ext.db import djangoforms
++        
++class SurveyContent(widgets.Widget):
++  class SurveyForm(djangoforms.ModelForm):
++    class Meta:
++      from soc.models.survey import SurveyContent
++      model = SurveyContent 
++      exclude = ['prefix', 'read_access', 'write_access', 
++               'is_featured', 'home_for']            
++  def render(self, name, value, attrs=None):
++    survey = self.SurveyForm()
++    return "<div id='survey_widget'><table>" + str(survey) + "</table></div>"
++    
++    
+ class ReadOnlyInput(forms.widgets.Input):
+   """Read only input widget.
+   """
+diff -r ebc4931f0762 app/soc/views/models/program.py
+--- a/app/soc/views/models/program.py	Tue May 05 21:48:46 2009 +0200
++++ b/app/soc/views/models/program.py	Tue May 05 16:27:32 2009 -0700
+@@ -52,6 +52,7 @@
+ from soc.views.models import presence
+ from soc.views.models import document as document_view
+ from soc.views.models import sponsor as sponsor_view
++from soc.views.models import survey as survey_view
+ from soc.views.sitemap import sidebar
+ 
+ import soc.cache.logic
+@@ -645,6 +646,7 @@
+       if entity.status == 'visible':
+         # show the documents for this program, even for not logged in users
+         items += document_view.view.getMenusForScope(entity, params)
++        items += survey_view.view.getMenusForScope(entity, params)
+         items += self._getTimeDependentEntries(entity, params, id, user)
+ 
+       try:
+@@ -677,6 +679,8 @@
+         items += [(redirects.getCreateDocumentRedirect(entity, 'program'),
+             "Create a New Document", 'any_access')]
+         # add link to list all Program Document
++        items += [(redirects.getCreateSurveyRedirect(entity, 'program'),
++            "Create a New Survey", 'any_access')]
+         items += [(redirects.getListDocumentsRedirect(entity, 'program'),
+             "List Documents", 'any_access')]
+ 
+diff -r ebc4931f0762 app/soc/views/models/survey.py
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/app/soc/views/models/survey.py	Tue May 05 16:27:32 2009 -0700
+@@ -0,0 +1,200 @@
++#!/usr/bin/python2.5
++#
++# Copyright 2008 the Melange authors.
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#   http://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++
++"""Views for Surveys.
++"""
++
++__authors__ = [
++  'JamesLevy" <jamesalexanderlevy@gmail.com>',
++  ]
++
++
++from django import forms
++
++from soc.logic import cleaning
++from soc.logic import dicts
++from soc.logic.models.survey import logic as survey_logic
++from soc.logic.models.user import logic as user_logic
++from soc.views.helper import access
++from soc.views.helper import decorators
++from soc.views.helper import redirects
++from soc.views.helper import widgets
++from soc.views.models import base
++
++
++class View(base.View):
++  """View methods for the Survey model.
++  """
++
++  def __init__(self, params=None):
++    """Defines the fields and methods required for the base View class
++    to provide the user with list, public, create, edit and delete views.
++
++    Params:
++      params: a dict with params for this View
++    """
++
++    rights = access.Checker(params)
++    rights['any_access'] = ['allow']
++    rights['show'] = ['checkIsDocumentReadable']
++    rights['create'] = ['checkIsUser']
++    rights['edit'] = ['checkIsDocumentWritable']
++    rights['delete'] = ['checkIsDocumentWritable']
++    rights['list'] = ['checkDocumentList']
++    rights['pick'] = ['checkDocumentPick']
++
++    new_params = {}
++    new_params['logic'] = survey_logic
++    new_params['rights'] = rights
++
++    new_params['name'] = "Survey"
++    new_params['pickable'] = True
++
++    new_params['export_content_type'] = 'text/text'
++    new_params['export_extension'] = '.html'
++    new_params['export_function'] = lambda x: (x.content, x.link_id)
++    new_params['delete_redirect'] = '/'
++    new_params['list_key_order'] = [
++        'link_id', 'scope_path', 'name', 'short_name', 'title',
++        'content', 'prefix','read_access','write_access']
++
++    new_params['no_create_raw'] = True
++    new_params['no_create_with_scope'] = True
++    new_params['no_create_with_key_fields'] = True
++    new_params['no_list_raw'] = True
++    new_params['sans_link_id_create'] = True
++    new_params['sans_link_id_list'] = True
++
++    new_params['create_dynafields'] = [
++        {'name': 'link_id',
++         'base': forms.fields.CharField,
++         'label': 'Survey Link ID',
++         },
++        ]
++
++    new_params['create_extra_dynaproperties'] = {
++
++
++       # 'content': None,
++                                             
++        'survey_content': forms.fields.CharField(widget=widgets.SurveyContent(),
++                                             required=False),
++
++        'scope_path': forms.fields.CharField(widget=forms.HiddenInput,
++                                             required=True),
++        'prefix': forms.fields.CharField(widget=widgets.ReadOnlyInput(),
++                                        required=True),
++        'clean_content': cleaning.clean_html_content('content'),
++        'clean_link_id': cleaning.clean_link_id('link_id'),
++        'clean_scope_path': cleaning.clean_scope_path('scope_path'),
++        'clean': cleaning.validate_document_acl(self, True),
++        }
++    new_params['extra_dynaexclude'] = ['author', 'created', 'content', 'home_for',
++                                       'modified_by', 'modified',]
++
++    new_params['edit_extra_dynaproperties'] = {
++        'doc_key_name': forms.fields.CharField(widget=forms.HiddenInput),
++        'created_by': forms.fields.CharField(
++            widget=widgets.ReadOnlyInput(), required=False),
++        'last_modified_by': forms.fields.CharField(
++            widget=widgets.ReadOnlyInput(), required=False),
++        'clean': cleaning.validate_document_acl(self),
++        }
++
++    params = dicts.merge(params, new_params)
++
++    super(View, self).__init__(params=params)
++
++  def list(self, request, access_type,
++           page_name=None, params=None, filter=None, order=None, **kwargs):
++    """See base.View.list.
++    """
++
++    return super(View, self).list(request, access_type, page_name=page_name,
++                                  params=params, filter=kwargs)
++
++  def _editPost(self, request, entity, fields):
++    """See base.View._editPost().
++    """
++
++    user = user_logic.getForCurrentAccount()
++
++    if not entity:
++      fields['author'] = user
++    else:
++      fields['author'] = entity.author
++
++    fields['modified_by'] = user
++    
++    fields['survey_content'] = "test content"
++
++    super(View, self)._editPost(request, entity, fields)
++
++  def _editGet(self, request, entity, form):
++    """See base.View._editGet().
++    """
++
++
++    form.fields['created_by'].initial = entity.author.name
++    form.fields['last_modified_by'].initial = entity.modified_by.name
++    form.fields['doc_key_name'].initial = entity.key().id_or_name()
++
++    super(View, self)._editGet(request, entity, form)
++
++  def getMenusForScope(self, entity, params):
++    """Returns the featured menu items for one specifc entity.
++
++    A link to the home page of the specified entity is also included.
++
++    Args:
++      entity: the entity for which the entry should be constructed
++      params: a dict with params for this View.
++    """
++
++    filter = {
++        'prefix' : params['url_name'],
++        'scope_path': entity.key().id_or_name(),
++        'is_featured': True,
++        }
++
++    entities = self._logic.getForFields(filter)
++
++    submenus = []
++
++    # add a link to the home page
++    submenu = (redirects.getHomeRedirect(entity, params), "Home", 'show')
++    submenus.append(submenu)
++
++    # add a link to all featured documents
++    for entity in entities:
++      #TODO only if a document is readable it might be added
++      submenu = (redirects.getPublicRedirect(entity, self._params),
++                 entity.short_name, 'show')
++      submenus.append(submenu)
++
++    return submenus
++
++
++view = View()
++
++admin = decorators.view(view.admin)
++create = decorators.view(view.create)
++edit = decorators.view(view.edit)
++delete = decorators.view(view.delete)
++list = decorators.view(view.list)
++public = decorators.view(view.public)
++export = decorators.view(view.export)
++pick = decorators.view(view.pick)
+diff -r ebc4931f0762 app/soc/views/sitemap/build.py
+--- a/app/soc/views/sitemap/build.py	Tue May 05 21:48:46 2009 +0200
++++ b/app/soc/views/sitemap/build.py	Tue May 05 16:27:32 2009 -0700
+@@ -45,6 +45,7 @@
+ from soc.views.models import student
+ from soc.views.models import student_project
+ from soc.views.models import student_proposal
++from soc.views.models import survey
+ from soc.views.models import timeline
+ from soc.views.models import user
+ from soc.views.models import user_self
+@@ -101,6 +102,7 @@
+ sitemap.addPages(student.view.getDjangoURLPatterns())
+ sitemap.addPages(student_project.view.getDjangoURLPatterns())
+ sitemap.addPages(student_proposal.view.getDjangoURLPatterns())
++sitemap.addPages(survey.view.getDjangoURLPatterns())
+ sitemap.addPages(timeline.view.getDjangoURLPatterns())
+ sitemap.addPages(user_self.view.getDjangoURLPatterns())
+ sitemap.addPages(user.view.getDjangoURLPatterns())

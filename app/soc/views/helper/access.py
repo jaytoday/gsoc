@@ -51,7 +51,6 @@ from soc.logic.models.role import logic as role_logic
 from soc.logic.models.site import logic as site_logic
 from soc.logic.models.sponsor import logic as sponsor_logic
 from soc.logic.models.student import logic as student_logic
-from soc.logic.models.survey import logic as survey_logic
 from soc.logic.models.student_project import logic as student_project_logic
 from soc.logic.models.student_proposal import logic as student_proposal_logic
 from soc.logic.models.timeline import logic as timeline_logic

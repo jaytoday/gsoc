@@ -31,8 +31,20 @@ from django.utils import simplejson
 from django.utils import safestring
 
 from soc.logic import dicts
-
-
+from google.appengine.ext.db import djangoforms
+        
+class SurveyContent(widgets.Widget):
+  class SurveyForm(djangoforms.ModelForm):
+    class Meta:
+      from soc.models.survey import SurveyContent
+      model = SurveyContent 
+      exclude = ['prefix', 'read_access', 'write_access', 
+               'is_featured', 'home_for']            
+  def render(self, name, value, attrs=None):
+    survey = self.SurveyForm()
+    return "<div id='survey_widget'><table>" + str(survey) + "</table></div>"
+    
+    
 class ReadOnlyInput(forms.widgets.Input):
   """Read only input widget.
   """

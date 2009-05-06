@@ -18,9 +18,7 @@
 """
 
 __authors__ = [
-    '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-    '"Lennard de Rijk" <ljvderijk@gmail.com>',
-    '"Pawel Solyga" <pawel.solyga@gmail.com>',
+  'JamesLevy" <jamesalexanderlevy@gmail.com>',
   ]
 
 
@@ -83,13 +81,18 @@ class View(base.View):
     new_params['create_dynafields'] = [
         {'name': 'link_id',
          'base': forms.fields.CharField,
-         'label': 'Document Link ID',
+         'label': 'Survey Link ID',
          },
         ]
 
     new_params['create_extra_dynaproperties'] = {
-        'content': forms.fields.CharField(
-            widget=widgets.FullTinyMCE(attrs={'rows': 25, 'cols': 100})),
+
+
+       # 'content': None,
+                                             
+        'survey_content': forms.fields.CharField(widget=widgets.SurveyContent(),
+                                             required=False),
+
         'scope_path': forms.fields.CharField(widget=forms.HiddenInput,
                                              required=True),
         'prefix': forms.fields.CharField(widget=widgets.ReadOnlyInput(),
@@ -99,8 +102,8 @@ class View(base.View):
         'clean_scope_path': cleaning.clean_scope_path('scope_path'),
         'clean': cleaning.validate_document_acl(self, True),
         }
-    new_params['extra_dynaexclude'] = ['author', 'created', 'home_for',
-                                       'modified_by', 'modified']
+    new_params['extra_dynaexclude'] = ['author', 'created', 'content', 'home_for',
+                                       'modified_by', 'modified',]
 
     new_params['edit_extra_dynaproperties'] = {
         'doc_key_name': forms.fields.CharField(widget=forms.HiddenInput),
@@ -135,12 +138,15 @@ class View(base.View):
       fields['author'] = entity.author
 
     fields['modified_by'] = user
+    
+    fields['survey_content'] = "test content"
 
     super(View, self)._editPost(request, entity, fields)
 
   def _editGet(self, request, entity, form):
     """See base.View._editGet().
     """
+
 
     form.fields['created_by'].initial = entity.author.name
     form.fields['last_modified_by'].initial = entity.modified_by.name
