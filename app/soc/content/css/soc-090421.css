@@ -142,6 +142,7 @@ td.formfieldrequired {
   font-style: italic;
   font-size: small;
   text-align: center;
+  float:left;
 }
 
 td.formfieldhelptext {
@@ -658,4 +659,26 @@ margin:30px;
 background-color:#FFFEEB;
 border:5px solid #F7CA75;
 padding: 15px;
+width:550px;
+}
+
+div#survey_options{
+margin: 20px 0 0 0;
+}
+
+div#survey_options button{
+display:block;
+margin:10px 0 0;
+}
+
+div#survey_widget textarea{
+padding: 10px;
+}
+div#survey_widget a.delete{
+margin:0 7px;
+}
+
+div#survey_widget label{
+display:block;
+max-width:170px;
 }

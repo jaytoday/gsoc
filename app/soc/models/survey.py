@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module contains the Document Model."""
+"""This module contains the Survey Model."""
 
 __authors__ = [
   'JamesLevy" <jamesalexanderlevy@gmail.com>',
@@ -27,24 +27,27 @@ from django.utils.translation import ugettext
 
 import soc.models.linkable
 import soc.models.work
+import soc.models.user
 
 
 
 class SurveyContent(db.Expando):
-	
   """Expando Class for Surveys
      Each survey entity consists of properties where names and default
      values are set by the survey creator
   """
-  string = db.StringProperty()
-  integer = db.IntegerProperty(default=1)
-  text = db.TextProperty()
-  select = db.StringProperty(default='Medium',choices=[
-    'High', 'Medium', 'Low'])
+  schema = db.StringProperty() # hidden 
   entry_time = db.DateTimeProperty(auto_now_add=True)
+  modified = db.DateTimeProperty(auto_now=True)
+
+  def set_schema(self, schema):
+  	 self.schema = str(schema)
+
+  def get_schema(self):
+  	 return eval(self.schema)
 
 
-
+  	 
 class Survey(soc.models.work.Work):
   """Model of a survey.
   
@@ -105,3 +108,27 @@ class Survey(soc.models.work.Work):
       'The Precense this document is the home document for.')
 
   survey_content = db.TextProperty()
+  this_survey = db.ReferenceProperty(SurveyContent, collection_name="survey_parent")
+
+  def take_survey(self):
+  	 #return self.survey_content # temporary
+  	 from soc.views.helper.surveys import TakeSurvey
+  	 survey = TakeSurvey()
+  	 return survey.render(self.this_survey)
+
+
+
+
+
+class SurveyRecord(db.Expando):
+  """Expando Class for Surveys
+     Each survey entity consists of properties where names and default
+     values are set by the survey creator
+  """
+  this_survey = db.ReferenceProperty(Survey, collection_name="survey_records")
+  user = db.ReferenceProperty(reference_class=soc.models.user.User,
+                                required=True,
+                                collection_name="taken_surveys",
+                                verbose_name=ugettext('Created by'))   
+  entry_time = db.DateTimeProperty(auto_now_add=True)
+  modified = db.DateTimeProperty(auto_now=True)

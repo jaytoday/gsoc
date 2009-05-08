@@ -1,37 +1,0 @@
-9
-
-dir
-103
-http://django-survey.googlecode.com/svn/trunk/survey/locale
-http://django-survey.googlecode.com/svn
-
-
-
-2008-10-10T21:25:34.401433Z
-91
-yann.malet
-
-
-svn:special svn:externals svn:needs-lock
-
-
-
-
-
-
-
-
-
-
-
-f67e0a98-9c48-0410-a59e-4384d0670f6d
-
-en
-dir
-
-fr
-dir
-
-es
-dir
-

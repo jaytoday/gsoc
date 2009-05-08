@@ -23,5 +23,20 @@ limitations under the License.
 
 {% block body %}
 <div id="created">Last modified on {{ entity.modified }} by {{ entity.modified_by.name }}</div>
-<div id="content">{{ entity.content|safe }}</div>
+
+
+<form method="post">
+
+{{ entity.take_survey|safe }}
+<table>
+<tbody>
+<tr> <td> 
+<input type="submit" value="Submit" style="font-weight: bold;"/>
+</td>
+</tr>
+</tbody>
+</table>
+
+</form>
+
 {% endblock %}

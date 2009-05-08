@@ -26,8 +26,7 @@ from soc.cache import sidebar
 from soc.cache import home
 from soc.logic.models import work
 from soc.logic.models import linkable as linkable_logic
-
-import soc.models.survey
+from soc.models.survey import SurveyContent, Survey, SurveyRecord
 import soc.models.work
 
 
@@ -35,7 +34,7 @@ class Logic(work.Logic):
   """Logic methods for the Survey model
   """
 
-  def __init__(self, model=soc.models.survey.Survey,
+  def __init__(self, model=Survey,
                base_model=soc.models.work.Work, scope_logic=linkable_logic):
     """Defines the name, key_name and model for this entity.
     """
@@ -43,6 +42,43 @@ class Logic(work.Logic):
     super(Logic, self).__init__(model=model, base_model=base_model,
                                 scope_logic=scope_logic)
 
+
+  def create_survey(self, survey_fields, schema, this_survey=False):
+    """ Create a new survey from prototype
+    """
+
+    if not this_survey: this_survey = SurveyContent()
+    else: 
+        # wipe clean existing dynamic properties if they exist
+        for prop in this_survey.dynamic_properties():
+        	delattr(this_survey, prop) 
+    for name, value in survey_fields.items(): setattr(this_survey, name, value)
+    this_survey.set_schema(schema)
+    from google.appengine.ext import db
+    db.put(this_survey)
+    return this_survey
+
+  def create_survey_record(self, user, survey_entity, survey_fields):
+    """ Create a new survey record
+    """
+
+    survey_record = SurveyRecord.gql("WHERE user = :1 AND this_survey = :2", user, survey_entity).get() 
+    if survey_record:
+    	for prop in survey_record.dynamic_properties(): 
+    	    delattr(survey_record, prop) 
+    if not survey_record: survey_record = SurveyRecord(
+                     user = user,
+                     this_survey = survey_entity
+                     )
+    for name, value in survey_fields.items(): setattr(survey_record, name, value)
+    from google.appengine.ext import db
+    db.put(survey_record)
+    return survey_record
+
+    
+    
+    
+    
   def getKeyValuesFromEntity(self, entity):
     """See base.Logic.getKeyNameValues.
     """
@@ -52,7 +88,6 @@ class Logic(work.Logic):
   def getKeyValuesFromFields(self, fields):
     """See base.Logic.getKeyValuesFromFields.
     """
-
 
     return [fields['prefix'], fields['scope_path'], fields['link_id']]
 
@@ -71,9 +106,6 @@ class Logic(work.Logic):
   def _updateField(self, entity, entity_properties, name):
     """Special logic for role. If state changes to active we flush the sidebar.
     """
-
-    
-    
     value = entity_properties[name]
 
     
@@ -89,3 +121,4 @@ class Logic(work.Logic):
 
 
 logic = Logic()
+

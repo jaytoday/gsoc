@@ -31,7 +31,7 @@ from soc.logic.models.user import logic as user_logic
 from soc.views.helper import access
 from soc.views.helper import decorators
 from soc.views.helper import redirects
-from soc.views.helper import widgets
+from soc.views.helper import widgets, surveys
 from soc.views.models import base
 
 
@@ -47,6 +47,7 @@ class View(base.View):
       params: a dict with params for this View
     """
 
+    # Param for entity?
     rights = access.Checker(params)
     rights['any_access'] = ['allow']
     rights['show'] = ['checkIsDocumentReadable']
@@ -88,10 +89,10 @@ class View(base.View):
     new_params['create_extra_dynaproperties'] = {
 
 
-       # 'content': None,
-                                             
-        'survey_content': forms.fields.CharField(widget=widgets.SurveyContent(),
+        'survey_content': forms.fields.CharField(widget=surveys.EditSurvey(),
                                              required=False),
+        's_html': forms.fields.CharField(widget=forms.HiddenInput),
+
 
         'scope_path': forms.fields.CharField(widget=forms.HiddenInput,
                                              required=True),
@@ -103,9 +104,10 @@ class View(base.View):
         'clean': cleaning.validate_document_acl(self, True),
         }
     new_params['extra_dynaexclude'] = ['author', 'created', 'content', 'home_for',
-                                       'modified_by', 'modified',]
+                                       'modified_by', 'modified', 'take_survey', 'this_survey' ]
 
     new_params['edit_extra_dynaproperties'] = {
+                                            
         'doc_key_name': forms.fields.CharField(widget=forms.HiddenInput),
         'created_by': forms.fields.CharField(
             widget=widgets.ReadOnlyInput(), required=False),
@@ -126,20 +128,57 @@ class View(base.View):
     return super(View, self).list(request, access_type, page_name=page_name,
                                   params=params, filter=kwargs)
 
+  def _public(self, request, entity, context):
+    """Performs any required processing to get an entity's public page.
+
+    Should return True if the public page should be displayed.
+
+    Args:
+      request: the django request object
+      entity: the entity to make public
+      context: the context object
+    """
+
+    if len(request.POST) == 0: return True
+    user = user_logic.getForCurrentAccount()
+    this_survey = survey_logic.create_survey_record(user, entity, request.POST)
+    return True
+
+
   def _editPost(self, request, entity, fields):
     """See base.View._editPost().
     """
+
 
     user = user_logic.getForCurrentAccount()
 
     if not entity:
       fields['author'] = user
     else:
-      fields['author'] = entity.author
+		fields['author'] = entity.author
+		
+		""" Check for new fields  
+		"""
+    survey_fields = {}
+    schema = {}
+    PROPERTY_TYPES = ('long_answer','short_answer','selection')
+    for key, value in request.POST.items():
+		if 'survey_' in key:
+			field_name = key.replace('survey_', '')
+			for type in PROPERTY_TYPES:
+				if type + "__" in field_name: 
+				   field_name = field_name.replace(type + "__", "")
+				   schema[field_name] = type
+				   if type == "selection":
+				   	value = str( tuple( value.split(',') ) )
+			survey_fields[field_name] = value
 
-    fields['modified_by'] = user
+    this_survey = survey_logic.create_survey(survey_fields, schema, this_survey=getattr(entity,'this_survey', None) )
+    if entity: entity.this_survey = this_survey 
+    else: fields['this_survey'] = this_survey
     
-    fields['survey_content'] = "test content"
+    fields['modified_by'] = user
+    fields['survey_content'] = request.POST['s_html']
 
     super(View, self)._editPost(request, entity, fields)
 
@@ -147,7 +186,10 @@ class View(base.View):
     """See base.View._editGet().
     """
 
-
+    import logging
+    logging.info(entity.this_survey.__dict__)
+    form.fields['survey_content'] = forms.fields.CharField(widget=surveys.EditSurvey(this_survey=entity.this_survey), 
+                                     required=False)
     form.fields['created_by'].initial = entity.author.name
     form.fields['last_modified_by'].initial = entity.modified_by.name
     form.fields['doc_key_name'].initial = entity.key().id_or_name()
@@ -164,11 +206,13 @@ class View(base.View):
       params: a dict with params for this View.
     """
 
+
     filter = {
         'prefix' : params['url_name'],
         'scope_path': entity.key().id_or_name(),
         'is_featured': True,
         }
+
 
     entities = self._logic.getForFields(filter)
 
