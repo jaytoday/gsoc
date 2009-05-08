@@ -157,3 +157,21 @@ class TakeSurvey(widgets.Widget):
 	                             'status': status } 
 	return result
     
+
+
+
+class SurveyResults(widgets.Widget):
+
+   RESULTS_HTML = """
+   <br/><br/>Survey results:<br/><br/>
+   """
+   def render(self, this_survey):
+   	response = self.RESULTS_HTML
+   	results = SurveyRecord.gql("WHERE this_survey = :1", this_survey).fetch(1000)
+   	for result in results:
+   		response += str(result.__dict__)
+   	return response
+   		
+   	#from django.template import loader
+    #template = 'soc/json.html'
+    #markup = loader.render_to_string(template, dictionary=context).strip('\n')

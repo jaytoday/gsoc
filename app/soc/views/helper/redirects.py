@@ -358,7 +358,12 @@ def getListSurveysRedirect(entity, prefix):
 
   return '/survey/list/%s/%s' % (prefix, entity.key().id_or_name())
 
+def getListSurveyResultsRedirect(entity, prefix):
+  """Returns the redirect for listing documents.
+  """
 
+  return '/survey/list_results/%s/%s' % (prefix, entity.key().id_or_name())
+  
 
 def getToSRedirect(presence):
   """Returns link to 'show' the ToS Document if it exists, None otherwise.

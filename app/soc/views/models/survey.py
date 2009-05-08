@@ -78,6 +78,7 @@ class View(base.View):
     new_params['no_list_raw'] = True
     new_params['sans_link_id_create'] = True
     new_params['sans_link_id_list'] = True
+    new_params['supplemental'] = "supplementalsupplementalsupplemental"
 
     new_params['create_dynafields'] = [
         {'name': 'link_id',
@@ -128,6 +129,7 @@ class View(base.View):
     return super(View, self).list(request, access_type, page_name=page_name,
                                   params=params, filter=kwargs)
 
+                                      
   def _public(self, request, entity, context):
     """Performs any required processing to get an entity's public page.
 
@@ -144,6 +146,17 @@ class View(base.View):
     this_survey = survey_logic.create_survey_record(user, entity, request.POST)
     return True
 
+  def _editContext(self, request, context):
+    """Performs any required processing on the context for edit pages.
+
+    Args:
+      request: the django request object
+      context: the context dictionary that will be used
+    """
+
+    results = surveys.SurveyResults()
+    context['supplemental'] = results.render(self._entity)
+    super(View, self)._editContext(request, context)
 
   def _editPost(self, request, entity, fields):
     """See base.View._editPost().
@@ -186,8 +199,7 @@ class View(base.View):
     """See base.View._editGet().
     """
 
-    import logging
-    logging.info(entity.this_survey.__dict__)
+    self._entity = entity
     form.fields['survey_content'] = forms.fields.CharField(widget=surveys.EditSurvey(this_survey=entity.this_survey), 
                                      required=False)
     form.fields['created_by'].initial = entity.author.name
@@ -239,6 +251,7 @@ create = decorators.view(view.create)
 edit = decorators.view(view.edit)
 delete = decorators.view(view.delete)
 list = decorators.view(view.list)
+#list_results = decorators.view(view.list)
 public = decorators.view(view.public)
 export = decorators.view(view.export)
 pick = decorators.view(view.pick)
