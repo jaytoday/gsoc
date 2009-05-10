@@ -37,7 +37,7 @@ class SurveyContent(db.Expando):
      values are set by the survey creator
   """
   schema = db.StringProperty() # hidden 
-  entry_time = db.DateTimeProperty(auto_now_add=True)
+  created = db.DateTimeProperty(auto_now_add=True)
   modified = db.DateTimeProperty(auto_now=True)
 
   def set_schema(self, schema):
@@ -45,7 +45,6 @@ class SurveyContent(db.Expando):
 
   def get_schema(self):
   	 return eval(self.schema)
-
 
   	 
 class Survey(soc.models.work.Work):
@@ -130,5 +129,12 @@ class SurveyRecord(db.Expando):
                                 required=True,
                                 collection_name="taken_surveys",
                                 verbose_name=ugettext('Created by'))   
-  entry_time = db.DateTimeProperty(auto_now_add=True)
+  created = db.DateTimeProperty(auto_now_add=True)
   modified = db.DateTimeProperty(auto_now=True)
+  
+  def get_values(self):
+  	 values = []
+  	 for property in self.dynamic_properties(): # this could also be confined to SurveyContent
+  	    values.append( getattr(self, property) )
+  	 return values
+  	 

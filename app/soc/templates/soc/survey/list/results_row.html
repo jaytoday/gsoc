@@ -1,0 +1,18 @@
+<tr class="off" onmouseover="this.className='on'" onmouseout="this.className='off'" 
+onclick="return false; document.location.href='{{ list.redirect }}'" name="name">
+<!--
+  <td align="right">
+   <div class="title">
+    <a class="noul"
+     href="{{ list.redirect }}">{{ list.item.scope_path}}/{{ list.item.link_id }}</a>
+   </div>
+  </td>
+  
+  -->
+  {% for value in list.item.get_values %}
+  <td><div class="{{ value }}"> {{ value }}</div></td>
+  {% endfor %}
+  <td><div class="author">{{ list.item.user.link_id }}</div></td>
+  <td><div class="created">{{ list.item.created }}</div></td>
+  <td><div class="modified">{{ list.item.modified }}</div></td>
+</tr>

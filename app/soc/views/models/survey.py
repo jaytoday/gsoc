@@ -78,7 +78,6 @@ class View(base.View):
     new_params['no_list_raw'] = True
     new_params['sans_link_id_create'] = True
     new_params['sans_link_id_list'] = True
-    new_params['supplemental'] = "supplementalsupplementalsupplemental"
 
     new_params['create_dynafields'] = [
         {'name': 'link_id',
@@ -154,8 +153,10 @@ class View(base.View):
       context: the context dictionary that will be used
     """
 
+    if not getattr(self, '_entity', None): return
     results = surveys.SurveyResults()
-    context['supplemental'] = results.render(self._entity)
+
+    context['supplemental'] = results.render(self._entity, self._params, filter={})
     super(View, self)._editContext(request, context)
 
   def _editPost(self, request, entity, fields):
@@ -183,7 +184,7 @@ class View(base.View):
 				   field_name = field_name.replace(type + "__", "")
 				   schema[field_name] = type
 				   if type == "selection":
-				   	value = str( tuple( value.split(',') ) )
+				   	value = str(  value.split(',')  )
 			survey_fields[field_name] = value
 
     this_survey = survey_logic.create_survey(survey_fields, schema, this_survey=getattr(entity,'this_survey', None) )
@@ -192,13 +193,16 @@ class View(base.View):
     
     fields['modified_by'] = user
     fields['survey_content'] = request.POST['s_html']
+    from soc.cache import home
+    # Flush the cache!
+    if entity: home.flush(entity)
 
     super(View, self)._editPost(request, entity, fields)
 
   def _editGet(self, request, entity, form):
     """See base.View._editGet().
     """
-
+    
     self._entity = entity
     form.fields['survey_content'] = forms.fields.CharField(widget=surveys.EditSurvey(this_survey=entity.this_survey), 
                                      required=False)

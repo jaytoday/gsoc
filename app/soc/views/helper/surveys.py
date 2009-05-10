@@ -30,7 +30,6 @@ from django.utils import html
 from django.utils import simplejson
 from django.utils import safestring
 from soc.models.survey import SurveyContent, Survey, SurveyRecord
-
 from soc.logic import dicts
 import cgi
 import wsgiref.handlers
@@ -67,7 +66,12 @@ class SurveyForm(djangoforms.ModelForm):
 		    kwargs['initial'][property] = value 
 		  if schema[property] == "selection": 
 		    these_choices = []
-		    for option in eval(value): these_choices.append( (option, option) )
+		    # add all properties, but select chosen one
+		    options = eval( getattr(this_survey, property) )
+		    if survey_record: 
+		       these_choices.append( (value, value) )
+		       options.remove(value) 
+		    for option in options: these_choices.append( (option, option) )
 		    SurveyForm.base_fields[property] = forms.ChoiceField( choices=tuple(these_choices), widget=forms.Select())
 
     super(SurveyForm, self).__init__(*args, **kwargs)
@@ -162,16 +166,49 @@ class TakeSurvey(widgets.Widget):
 
 class SurveyResults(widgets.Widget):
 
-   RESULTS_HTML = """
-   <br/><br/>Survey results:<br/><br/>
-   """
-   def render(self, this_survey):
-   	response = self.RESULTS_HTML
-   	results = SurveyRecord.gql("WHERE this_survey = :1", this_survey).fetch(1000)
-   	for result in results:
-   		response += str(result.__dict__)
-   	return response
-   		
-   	#from django.template import loader
-    #template = 'soc/json.html'
-    #markup = loader.render_to_string(template, dictionary=context).strip('\n')
+	def render(self, this_survey, params, filter=filter, limit=1000, 
+	           offset=0, order=[], idx=0, context={}):
+		from soc.logic.models.survey import results_logic as results_logic
+		logic = results_logic
+		data = logic.getForFields(filter=filter, limit=limit, offset=offset,
+							order=order)
+		params['name'] = "Survey Results"
+		content = {
+		  'idx': idx,
+		  'data': data,
+		  #'export': export_link,
+		  'logic': logic,
+		  'limit': limit,
+		  }
+		updates = dicts.rename(params, params['list_params'])
+		content.update(updates)
+		contents = [content]
+		#content = [i for i in contents if i.get('idx') == export]
+		if len(content) == 1:
+		  content = content[0]
+		  key_order = content.get('key_order')
+
+		  #if key_order:
+			#data = [i.toDict(key_order) for i in content['data']]
+			#filename = "export_%d" % export
+			#return self.csv(request, data, filename, params, key_order)
+
+		from soc.views import helper
+		import soc.logic.lists
+		#context = dicts.merge(context,helper.responses.getUniversalContext(request))
+		
+		#helper.responses.useJavaScript(context, params['js_uses_all'])
+		context['list'] = soc.logic.lists.Lists(contents)
+		for list in context['list']._contents:
+			list['row'] = 'soc/survey/list/results_row.html'
+			list['heading'] = 'soc/survey/list/results_heading.html'
+			list['description'] = 'Survey Results:'
+		context['properties'] = this_survey.this_survey.dynamic_properties()
+		context['entity_type'] = "Survey Results"
+		context['entity_type_plural'] = "Results"
+		#context['list_msg'] = "Survey Results"
+		context['no_lists_msg'] = "No Survey Results"
+
+		from django.template import loader
+		markup = loader.render_to_string('soc/survey/results.html', dictionary=context).strip('\n')
+		return markup

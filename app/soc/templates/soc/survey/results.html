@@ -1,0 +1,13 @@
+{% if list_msg %}
+{{ list_msg|safe }}
+{% endif %}
+
+{% if list.empty %}
+{{ no_lists_msg }}
+{% endif %}
+{% for list_number in list.lists %}
+<p>
+
+{% include list.nextList %}
+</p>
+{% endfor %}
