@@ -142,7 +142,6 @@ td.formfieldrequired {
   font-style: italic;
   font-size: small;
   text-align: center;
-  float:left;
 }
 
 td.formfieldhelptext {
@@ -645,7 +644,6 @@ span.edited {
   border:0 none;
   color:black;
 }
-
 
 
 /* Surveys */

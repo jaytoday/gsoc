@@ -43,7 +43,20 @@ from google.appengine.ext.db import djangoforms
 
 class SurveyForm(djangoforms.ModelForm):
  def __init__(self, *args, **kwargs):
-    """Defines the name, key_name and model for this entity.
+    """ This class is used to produce survey forms for several 
+    circumstances:
+    
+    - Admin creating survey from scratch
+    - Admin updating existing survey
+    - User taking survey 
+    - User updating already taken survey
+    
+    Using dynamic properties of the this_survey model (if passed
+    as an arg) the survey form is dynamically formed.
+    
+    TODO: Form now scrambles the order of fields. If it's important
+    that fields are listed in a certain order, an alternative to 
+    the schema dictionary will have to be used.
     """
     kwargs['initial']= {}
     this_survey = kwargs.get('this_survey', None)
@@ -78,7 +91,6 @@ class SurveyForm(djangoforms.ModelForm):
     
  
  class Meta:
-  # Check if a new one should be created 
   model = SurveyContent
   exclude = ['schema']  
 
@@ -90,7 +102,8 @@ class SurveyForm(djangoforms.ModelForm):
       
 class EditSurvey(widgets.Widget):
    """
-   Edit the Survey """	
+   Edit Survey, or Create Survey if not this_survey arg given.
+   """	
    WIDGET_HTML = """
    <div id="survey_widget"><table> %(survey)s </table> %(options_html)s </div>
    <script type="text/javascript" src="/soc/content/js/edit_survey.js"></script>
@@ -132,18 +145,13 @@ class EditSurvey(widgets.Widget):
 
 class TakeSurvey(widgets.Widget):
    """
-   Take the Survey """
+   Take Survey, or Update Survey.  """
    WIDGET_HTML = """
    %(help_text)s <div class="%(status)s"id="survey_widget"><table> %(survey)s </table> </div>
    <script type="text/javascript" src="/soc/content/js/take_survey.js"></script>
    """
 
    def render(self, this_survey):
-   	
-	#print self.entity
-	#if self.entity: survey = self.SurveyForm(entity)
-	#else: survey = self.SurveyForm()
-	
 	#check if user has already submitted form. If so, show existing form 
 	import soc.models.user
 	from soc.logic.models.user import logic as user_logic
@@ -165,18 +173,24 @@ class TakeSurvey(widgets.Widget):
 
 
 class SurveyResults(widgets.Widget):
-
+	"""
+	
+	Render List of Survey Results For Given Survey
+	
+	"""
 	def render(self, this_survey, params, filter=filter, limit=1000, 
 	           offset=0, order=[], idx=0, context={}):
 		from soc.logic.models.survey import results_logic as results_logic
 		logic = results_logic
+		filter = { 'this_survey': this_survey }
 		data = logic.getForFields(filter=filter, limit=limit, offset=offset,
 							order=order)
+
 		params['name'] = "Survey Results"
 		content = {
 		  'idx': idx,
 		  'data': data,
-		  #'export': export_link,
+		  #'export': export_link, TODO - export to CVS
 		  'logic': logic,
 		  'limit': limit,
 		  }
@@ -188,16 +202,13 @@ class SurveyResults(widgets.Widget):
 		  content = content[0]
 		  key_order = content.get('key_order')
 
-		  #if key_order:
+		  #if key_order: TODO - list order 
 			#data = [i.toDict(key_order) for i in content['data']]
 			#filename = "export_%d" % export
 			#return self.csv(request, data, filename, params, key_order)
 
 		from soc.views import helper
 		import soc.logic.lists
-		#context = dicts.merge(context,helper.responses.getUniversalContext(request))
-		
-		#helper.responses.useJavaScript(context, params['js_uses_all'])
 		context['list'] = soc.logic.lists.Lists(contents)
 		for list in context['list']._contents:
 			list['row'] = 'soc/survey/list/results_row.html'
@@ -206,7 +217,6 @@ class SurveyResults(widgets.Widget):
 		context['properties'] = this_survey.this_survey.dynamic_properties()
 		context['entity_type'] = "Survey Results"
 		context['entity_type_plural'] = "Results"
-		#context['list_msg'] = "Survey Results"
 		context['no_lists_msg'] = "No Survey Results"
 
 		from django.template import loader

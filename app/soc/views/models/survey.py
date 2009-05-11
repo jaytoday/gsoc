@@ -91,9 +91,6 @@ class View(base.View):
 
         'survey_content': forms.fields.CharField(widget=surveys.EditSurvey(),
                                              required=False),
-        's_html': forms.fields.CharField(widget=forms.HiddenInput),
-
-
         'scope_path': forms.fields.CharField(widget=forms.HiddenInput,
                                              required=True),
         'prefix': forms.fields.CharField(widget=widgets.ReadOnlyInput(),
@@ -151,6 +148,11 @@ class View(base.View):
     Args:
       request: the django request object
       context: the context dictionary that will be used
+      
+      Adds list of SurveyRecord results as supplement to view.
+      
+      See surveys.SurveyResults for details.
+      
     """
 
     if not getattr(self, '_entity', None): return
@@ -161,6 +163,9 @@ class View(base.View):
 
   def _editPost(self, request, entity, fields):
     """See base.View._editPost().
+    
+    Processes POST request items to add new dynamic field names, 
+    question types, and default prompt values to SurveyContent model.
     """
 
 
@@ -192,9 +197,8 @@ class View(base.View):
     else: fields['this_survey'] = this_survey
     
     fields['modified_by'] = user
-    fields['survey_content'] = request.POST['s_html']
     from soc.cache import home
-    # Flush the cache!
+    # Flush the cache! TODO - Not Working
     if entity: home.flush(entity)
 
     super(View, self)._editPost(request, entity, fields)
@@ -234,10 +238,6 @@ class View(base.View):
 
     submenus = []
 
-    # add a link to the home page
-    submenu = (redirects.getHomeRedirect(entity, params), "Home", 'show')
-    submenus.append(submenu)
-
     # add a link to all featured documents
     for entity in entities:
       #TODO only if a document is readable it might be added
@@ -255,7 +255,6 @@ create = decorators.view(view.create)
 edit = decorators.view(view.edit)
 delete = decorators.view(view.delete)
 list = decorators.view(view.list)
-#list_results = decorators.view(view.list)
 public = decorators.view(view.public)
 export = decorators.view(view.export)
 pick = decorators.view(view.pick)

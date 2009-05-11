@@ -33,8 +33,9 @@ import soc.models.user
 
 class SurveyContent(db.Expando):
   """Expando Class for Surveys
+  
      Each survey entity consists of properties where names and default
-     values are set by the survey creator
+     values are set by the survey creator as survey fields. 
   """
   schema = db.StringProperty() # hidden 
   created = db.DateTimeProperty(auto_now_add=True)
@@ -50,16 +51,10 @@ class SurveyContent(db.Expando):
 class Survey(soc.models.work.Work):
   """Model of a survey.
   
-  survey is used for things like FAQs, front page text, etc.
-
-  The specific way that the properties and relations inherited from Work
-  are used with a survey are described below.
-
-    work.title:  the title of the Document
-
-    work.reviews:  reviews of the Document by Reviewers
-
-    work.content:  the rich-text contents of the Document
+  This model describes meta-information and permissions.
+  
+  The actual questions of the survey are contained in the SurveyContent entity. 
+  
   """
 
 
@@ -99,14 +94,6 @@ class Survey(soc.models.work.Work):
       'Field used to indicate if a Work should be featured, for example,'
       ' in the sidebar menu.')
 
-  #: Reference to survey containing the contents of the "/home" page
-  home_for = db.ReferenceProperty(
-    reference_class=soc.models.linkable.Linkable,
-    collection_name='home_surveys')
-  home_for.help_text = ugettext(
-      'The Precense this document is the home document for.')
-
-  survey_content = db.TextProperty()
   this_survey = db.ReferenceProperty(SurveyContent, collection_name="survey_parent")
 
   def take_survey(self):
@@ -120,9 +107,10 @@ class Survey(soc.models.work.Work):
 
 
 class SurveyRecord(db.Expando):
-  """Expando Class for Surveys
-     Each survey entity consists of properties where names and default
-     values are set by the survey creator
+  """Record produced each time Survey is taken.
+  
+  Like SurveyContent, this model includes dynamic properties 
+  corresponding to the fields of the survey. 
   """
   this_survey = db.ReferenceProperty(Survey, collection_name="survey_records")
   user = db.ReferenceProperty(reference_class=soc.models.user.User,

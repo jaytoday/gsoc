@@ -381,7 +381,7 @@ class View(object):
     context = helper.responses.getUniversalContext(request)
     helper.responses.useJavaScript(context, params['js_uses_all'])
     context['page_name'] = page_name
-    
+
     try:
       entity = logic.getFromKeyFieldsOr404(kwargs)
     except out_of_band.Error, error:

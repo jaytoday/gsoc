@@ -20,7 +20,6 @@
 __authors__ = [
   '"Pawel Solyga" <pawel.solyga@gmail.com>',
   '"Sverre Rabbelier" <sverre@rabbelier.nl>',
-  'JamesLevy" <jamesalexanderlevy@gmail.com>',
   ]
 
 
@@ -32,9 +31,8 @@ from django.utils import simplejson
 from django.utils import safestring
 
 from soc.logic import dicts
-from google.appengine.ext.db import djangoforms
 
-	    
+
 class ReadOnlyInput(forms.widgets.Input):
   """Read only input widget.
   """
