@@ -112,11 +112,6 @@ class Logic(work.Logic):
     if (name == 'is_featured') and (entity.is_featured != value):
       sidebar.flush()
 
-    home_for = entity.home_for
-
-    if (name != 'home_for') and home_for:
-      home.flush(home_for)
-
     return True
 
 

@@ -680,3 +680,8 @@ div#survey_widget label{
 display:block;
 max-width:170px;
 }
+
+
+div#survey_widget input{
+width: 99%;
+}

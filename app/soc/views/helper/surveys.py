@@ -64,20 +64,25 @@ class SurveyForm(djangoforms.ModelForm):
     del kwargs['this_survey']
     del kwargs['survey_record']
     if this_survey: 
+		fields = {}
+		survey_order = {}
 		schema = this_survey.get_schema()
 		for property in this_survey.dynamic_properties():
+		
 		  if survey_record: # use previously entered value
 		     value = getattr(survey_record, property)
 		  else: # use prompts set by survey creator
-		     value = getattr(this_survey, property)
-		 # if schema[property] == "selection": pass
-		  if schema[property] == "long_answer": 
-		    SurveyForm.base_fields[property] = forms.fields.CharField(widget=widgets.Textarea())
+		     value = getattr(this_survey, property)	     
+		  # map out the order of the survey fields 
+		  survey_order[schema[property]["index"]] = property
+		  # correct answers? Necessary for grading    
+		  if schema[property]["type"] == "long_answer": 
+		    fields[property] = forms.fields.CharField(widget=widgets.Textarea()) #custom rows 
 		    kwargs['initial'][property] = value
-		  if schema[property] == "short_answer": 
-		    SurveyForm.base_fields[property] = forms.fields.CharField(max_length=40)
+		  if schema[property]["type"] == "short_answer": 
+		    fields[property] = forms.fields.CharField(max_length=40)
 		    kwargs['initial'][property] = value 
-		  if schema[property] == "selection": 
+		  if schema[property]["type"] == "selection": 
 		    these_choices = []
 		    # add all properties, but select chosen one
 		    options = eval( getattr(this_survey, property) )
@@ -85,7 +90,11 @@ class SurveyForm(djangoforms.ModelForm):
 		       these_choices.append( (value, value) )
 		       options.remove(value) 
 		    for option in options: these_choices.append( (option, option) )
-		    SurveyForm.base_fields[property] = forms.ChoiceField( choices=tuple(these_choices), widget=forms.Select())
+		    fields[property] = forms.ChoiceField( choices=tuple(these_choices), widget=forms.Select())
+		
+		for position, property in survey_order.items():
+			SurveyForm.base_fields.insert(position, property, fields[property] )
+		 
 
     super(SurveyForm, self).__init__(*args, **kwargs)
     

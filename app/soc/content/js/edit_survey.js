@@ -2,6 +2,8 @@
     var DEFAULT_LONG_ANSWER_TEXT = 'Write a Custom Prompt...';
     var DEFAULT_SHORT_ANSWER_TEXT = 'Write a Custom Prompt...';
     var DEFAULT_OPTION_TEXT = 'Add A New Option...';
+    var min_rows = 10;
+    max_rows = min_rows * 2;
     
     
 jQuery.fn.extend({
@@ -63,11 +65,16 @@ var type = $(this).attr('id') + "__";
 
 switch($(this).attr('id')){
 case "short_answer":  
-var new_field = "<input type='text' />";
+var new_field = "<input type='text'/>";
 break;
 
-case "long_answer":  
-var new_field = "<textarea cols='40' rows='10' />";
+case "long_answer": 
+
+
+var new_field = "<textarea cols='40' rows='" + min_rows + "' />";
+
+
+    
 break;
 
 case "selection": 
@@ -76,11 +83,16 @@ break;
 }
 
 if (new_field) {
+	
+	field_count = survey.find('tr').length;
+	new_field_count = field_count + 1;
     new_field = $(new_field);
-    $(new_field).attr({ 'id': 'id_' + field_name, 'name': 'survey_' + type + field_name });
-	field_template.find('label').attr('for', 'id_' + field_name)
+    formatted_name = 'survey__' + new_field_count + '__' + type +  field_name;
+    // maybe the name should be serialized in a more common format
+    $(new_field).attr({ 'id': 'id_' + formatted_name, 'name': formatted_name });
+	field_template.find('label').attr('for', 'id_' + formatted_name)
 	                                         .append(field_name + ":").end()
-				  .find('td').append(new_field).find(new_field);
+				  .find('td').append(new_field);
 	survey.append(field_template).trigger('init'); 
 
 }
@@ -98,6 +110,10 @@ if ($(this).val().length < 1 | $(this).val() == DEFAULT_SHORT_ANSWER_TEXT) $(thi
 
 widget.find('textarea').each(function(){ 
 if ($(this).val().length < 1 | $(this).val() == DEFAULT_LONG_ANSWER_TEXT) $(this).preserveDefaultText(DEFAULT_LONG_ANSWER_TEXT);
+var sizer = sizeTextArea(min_rows, max_rows);
+$(this).keyup(sizer).keyup(); // will this work?
+
+
 }); 
 
 widget.find('select').change(function(){
@@ -157,3 +173,21 @@ if ($(this).val() == DEFAULT_LONG_ANSWER_TEXT) $(this).val('');
    
    });
    
+
+
+
+
+function sizeTextArea(min, max) {
+    return function(e) {
+        if (!this.rows || this.rows < min) this.rows = min;
+        while ((this.clientHeight >= this.scrollHeight 
+                && this.rows > 1 && this.rows <= max) 
+               || this.rows > max) this.rows -= 1;
+        while ((this.clientHeight < this.scrollHeight 
+                || this.rows < min) 
+               && this.rows < max) this.rows += 1;
+        if (this.rows == max
+            && this.clientHeight < this.scrollHeight) this.style.overflow = 'auto';
+        else this.style.overflow = 'hidden';
+    }
+}

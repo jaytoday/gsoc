@@ -180,16 +180,32 @@ class View(base.View):
 		"""
     survey_fields = {}
     schema = {}
+    #CHARS_PER_LINE = 15 # keep it on the low side to be safe 
     PROPERTY_TYPES = ('long_answer','short_answer','selection')
+    import re
     for key, value in request.POST.items():
-		if 'survey_' in key:
-			field_name = key.replace('survey_', '')
+    	if key.startswith('survey__'):
+    		# This is ugly, but unless data is serialized the regex 
+    		# is needed 
+			prefix = re.compile('survey__([0-9]{1,3})__')
+			prefix_match = re.match(prefix, key)
+			index = int( prefix_match.group(0).replace('survey', '').replace('__','') )
+			field_name = prefix.sub('', key)
 			for type in PROPERTY_TYPES:
+				# should only match one
 				if type + "__" in field_name: 
 				   field_name = field_name.replace(type + "__", "")
-				   schema[field_name] = type
+				   schema[field_name] = {}
+				   schema[field_name]["index"] = index
+				   schema[field_name]["type"] = type 
 				   if type == "selection":
 				   	value = str(  value.split(',')  )
+				   #if type == "long_answer":
+				   	#schema[field_name]["row_count"] = len(value) / CHARS_PER_LINE
+				   	
+
+			# set correct answer
+			# number of rows 
 			survey_fields[field_name] = value
 
     this_survey = survey_logic.create_survey(survey_fields, schema, this_survey=getattr(entity,'this_survey', None) )
